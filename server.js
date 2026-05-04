@@ -21,6 +21,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
   'https://barber-shop-nine-mu.vercel.app',
   'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'http://localhost:3000',
 ];
 
@@ -52,7 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -63,7 +64,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-}));
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
