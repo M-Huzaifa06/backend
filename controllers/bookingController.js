@@ -1,8 +1,10 @@
-git remote add origin https://github.com/M-Huzaifa06/barber-backend.git
-git branch -M main
-git push -u origin mainconst Booking = require('../models/Booking');
+const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const { calculateEndTime, checkSlotAvailability } = require('../src/utils/timeCalculator');
+
+
+
+
 
 // @desc    Create new booking
 // @route   POST /api/bookings
