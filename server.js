@@ -10,7 +10,7 @@ const envPath = path.resolve(__dirname, '.env');
 dotenv.config({ path: envPath, override: true });
 
 if (!process.env.MONGO_URI) {
-  process.env.MONGO_URI = 'mongodb://127.0.0.1:27017/barber_shop';
+  process.env.MONGO_URI = 'mongodb+srv://mughalhuzaifa3486_db_user:huzaifa1234@cluster0.w7fcnmb.mongodb.net/barber_shop';
 }
 
 connectDB();
@@ -18,14 +18,12 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-// Allowed origins
 const allowedOrigins = [
   'https://barber-shop-nine-mu.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
 ];
 
-// Setup Socket.IO
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -36,29 +34,24 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
-
   socket.on('join-room', (room) => {
     socket.join(room);
     console.log(`Socket ${socket.id} joined room ${room}`);
   });
-
   socket.on('leave-room', (room) => {
     socket.leave(room);
     console.log(`Socket ${socket.id} left room ${room}`);
   });
-
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });
 
-// Middleware to inject io into req
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-// CORS Middleware
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -74,6 +67,12 @@ app.use(cors({
 
 app.use(express.json());
 
+// Request logger
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 // Routes
 app.use('/api/branches', require('./routes/branch'));
 app.use('/api/barbers', require('./routes/barber'));
@@ -88,5 +87,18 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`\n📋 Registered API Routes:`);
+  console.log(`   GET/POST   http://localhost:${PORT}/api/branches`);
+  console.log(`   GET        http://localhost:${PORT}/api/barbers`);
+  console.log(`   GET        http://localhost:${PORT}/api/services`);
+  console.log(`   POST       http://localhost:${PORT}/api/availability/slots`);
+  console.log(`   POST       http://localhost:${PORT}/api/availability/check`);
+  console.log(`   GET/POST   http://localhost:${PORT}/api/bookings`);
+  console.log(`   GET/PATCH  http://localhost:${PORT}/api/bookings/:id`);
+  console.log(`\n✅ CORS allowed origins:`);
+  allowedOrigins.forEach(origin => console.log(`   - ${origin}`));
+  console.log('');
 });
+
+
