@@ -9,10 +9,6 @@ const connectDB = require('./config/db');
 const envPath = path.resolve(__dirname, '.env');
 dotenv.config({ path: envPath, override: true });
 
-if (!process.env.MONGO_URI) {
-  process.env.MONGO_URI = 'mongodb+srv://mughalhuzaifa3486_db_user:huzaifa1234@cluster0.w7fcnmb.mongodb.net/barber_shop';
-}
-
 connectDB();
 
 const app = express();
