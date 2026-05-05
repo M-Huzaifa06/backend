@@ -15,7 +15,7 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-  'https://barber-shop-nine-mu.vercel.app',
+  'https://barber-shop-omega-nine.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
