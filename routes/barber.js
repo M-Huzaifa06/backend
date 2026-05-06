@@ -1,7 +1,8 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const { getBarbers } = require('../controllers/barberController');
+const { getBarbers, createBarber } = require('../controllers/barberController');
 
 router.get('/', getBarbers);
+router.post('/', createBarber);
 
 module.exports = router;
