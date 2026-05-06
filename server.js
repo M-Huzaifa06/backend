@@ -81,6 +81,10 @@ app.use('/api/services', require('./routes/service'));
 app.use('/api/availability', require('./routes/availability'));
 app.use('/api/bookings', require('./routes/booking'));
 
+app.get('/api', (req, res) => {
+  res.send('API endpoints: /api/branches, /api/barbers, /api/services, /api/availability, /api/bookings');
+});
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
