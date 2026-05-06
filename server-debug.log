@@ -1,0 +1,43 @@
+◇ injected env (3) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+🚀 Server running on port 5000
+
+📋 Registered API Routes:
+   GET/POST   http://localhost:5000/api/branches
+   GET        http://localhost:5000/api/barbers
+   GET        http://localhost:5000/api/services
+   POST       http://localhost:5000/api/availability/slots
+   POST       http://localhost:5000/api/availability/check
+   GET/POST   http://localhost:5000/api/bookings
+   GET/PATCH  http://localhost:5000/api/bookings/:id
+
+✅ CORS allowed origins:
+   - https://barber-shop-omega-nine.vercel.app
+   - http://localhost:5173
+   - http://localhost:5174
+   - http://localhost:5175
+   - http://127.0.0.1:5173
+   - http://127.0.0.1:5174
+   - http://127.0.0.1:5175
+   - http://localhost:3000
+
+MongoDB Connected: ac-irbbhzw-shard-00-00.0yoswgn.mongodb.net
+[2026-05-06T10:17:08.806Z] GET /api/barbers
+[2026-05-06T10:17:18.046Z] GET /api/branches
+[2026-05-06T10:17:59.159Z] GET /api/services
+[2026-05-06T10:18:09.115Z] GET /api/services
+[2026-05-06T10:18:09.132Z] GET /api/branches
+[2026-05-06T10:18:09.138Z] GET /api/barbers
+[2026-05-06T10:18:47.504Z] GET /api
+[2026-05-06T10:18:47.716Z] GET /favicon.ico
+[2026-05-06T10:18:57.603Z] GET /api/services
+[2026-05-06T10:18:57.609Z] GET /api/branches
+[2026-05-06T10:18:57.613Z] GET /api/barbers
+[2026-05-06T10:19:21.209Z] POST /api/services
+[2026-05-06T10:19:21.342Z] GET /api/services
+[2026-05-06T10:19:21.347Z] GET /api/branches
+[2026-05-06T10:19:21.350Z] GET /api/barbers
+[2026-05-06T10:21:25.856Z] POST /api/branches
+[2026-05-06T10:21:26.899Z] GET /api/branches
+[2026-05-06T10:21:26.911Z] GET /api/services
+[2026-05-06T10:21:26.913Z] GET /api/barbers

@@ -17,9 +17,21 @@ const server = http.createServer(app);
 const allowedOrigins = [
   'https://barber-shop-omega-nine.vercel.app',
   'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
   'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://127.0.0.1:5175',
   'http://localhost:3000',
 ];
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
+if (process.env.ADMIN_URL) {
+  allowedOrigins.push(process.env.ADMIN_URL);
+}
 
 const io = new Server(server, {
   cors: {
@@ -66,7 +78,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('/{*path}', cors(corsOptions));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logger
 app.use((req, res, next) => {
@@ -89,6 +102,24 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      error: 'Uploaded image is too large. Please choose a smaller image.',
+    });
+  }
+
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid JSON payload',
+    });
+  }
+
+  next(error);
+});
+
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
@@ -105,5 +136,3 @@ server.listen(PORT, () => {
   allowedOrigins.forEach(origin => console.log(`   - ${origin}`));
   console.log('');
 });
-
-
