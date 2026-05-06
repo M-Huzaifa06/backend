@@ -14,7 +14,8 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
+const defaultOrigins = [
+  'https://admin-two-alpha-95.vercel.app',
   'https://barber-shop-omega-nine.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
@@ -25,17 +26,22 @@ const allowedOrigins = [
   'http://localhost:3000',
 ];
 
-if (process.env.CLIENT_URL) {
-  allowedOrigins.push(process.env.CLIENT_URL);
+const allowedOrigins = new Set();
+
+function addAllowedOrigin(origin) {
+  if (!origin) return;
+  allowedOrigins.add(origin.replace(/\/$/, ''));
 }
 
-if (process.env.ADMIN_URL) {
-  allowedOrigins.push(process.env.ADMIN_URL);
-}
+defaultOrigins.forEach(addAllowedOrigin);
+addAllowedOrigin(process.env.CLIENT_URL);
+addAllowedOrigin(process.env.ADMIN_URL);
+
+const allowedOriginList = [...allowedOrigins];
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: allowedOriginList,
     methods: ['GET', 'POST'],
     credentials: true,
   }
@@ -63,7 +69,7 @@ app.use((req, res, next) => {
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.has(origin.replace(/\/$/, ''))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
