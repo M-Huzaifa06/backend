@@ -1,7 +1,9 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const { getServices } = require('../controllers/serviceController');
+const { getServices, createService, deleteService } = require('../controllers/serviceController');
 
 router.get('/', getServices);
+router.post('/', createService);
+router.delete('/:id', deleteService);
 
 module.exports = router;

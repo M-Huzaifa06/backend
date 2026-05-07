@@ -1,4 +1,6 @@
 const Booking = require('../models/Booking');
+const Branch = require('../models/Branch');
+const Barber = require('../models/Barber');
 const Service = require('../models/Service');
 const { calculateEndTime, checkSlotAvailability } = require('../src/utils/timeCalculator');
 
@@ -18,11 +20,27 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    // 2. Fetch services, calc total duration and price
-    const services = await Service.find({ _id: { $in: serviceIds } });
-    if (!services.length) {
+    // 2. Fetch selected records so bookings keep readable name snapshots in MongoDB
+    const [branch, barber, services] = await Promise.all([
+      Branch.findById(branchId),
+      Barber.findById(barberId),
+      Service.find({ _id: { $in: serviceIds } })
+    ]);
+
+    if (!branch) {
+      return res.status(404).json({ success: false, error: 'Branch not found' });
+    }
+
+    if (!barber) {
+      return res.status(404).json({ success: false, error: 'Barber not found' });
+    }
+
+    const requestedServiceCount = new Set(serviceIds.map(String)).size;
+    if (!services.length || services.length !== requestedServiceCount) {
       return res.status(404).json({ success: false, error: 'Services not found' });
     }
+
+    const serviceNameById = new Map(services.map(service => [service._id.toString(), service.name]));
 
     const totalDuration = services.reduce((acc, s) => acc + (s.duration || 0), 0);
     const totalPrice = services.reduce((acc, s) => acc + (s.price || 0), 0);
@@ -39,8 +57,23 @@ exports.createBooking = async (req, res) => {
     // 5. Create
     const booking = await Booking.create({
       branch: branchId,
+      branchName: branch.name,
+      branchSnapshot: {
+        id: branch._id,
+        name: branch.name
+      },
       barber: barberId,
+      barberName: barber.name,
+      barberSnapshot: {
+        id: barber._id,
+        name: barber.name
+      },
       services: serviceIds,
+      serviceNames: serviceIds.map(serviceId => serviceNameById.get(serviceId.toString())),
+      serviceSnapshots: serviceIds.map(serviceId => ({
+        id: serviceId,
+        name: serviceNameById.get(serviceId.toString())
+      })),
       gender,
       date,
       startTime,
