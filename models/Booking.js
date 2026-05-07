@@ -2,8 +2,11 @@ const mongoose = require('mongoose');
 
 const BookingSchema = new mongoose.Schema({
   branch: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true },
+  branchName: { type: String },
   barber: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
+  barberName: { type: String },
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true }],
+  serviceNames: [{ type: String }],
   gender: { type: String, enum: ['male', 'female'], required: true },
   date: { type: String, required: true },
   startTime: { type: String, required: true },
