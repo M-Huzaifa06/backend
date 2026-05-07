@@ -58,10 +58,22 @@ exports.createBooking = async (req, res) => {
     const booking = await Booking.create({
       branch: branchId,
       branchName: branch.name,
+      branchSnapshot: {
+        id: branch._id,
+        name: branch.name
+      },
       barber: barberId,
       barberName: barber.name,
+      barberSnapshot: {
+        id: barber._id,
+        name: barber.name
+      },
       services: serviceIds,
       serviceNames: serviceIds.map(serviceId => serviceNameById.get(serviceId.toString())),
+      serviceSnapshots: serviceIds.map(serviceId => ({
+        id: serviceId,
+        name: serviceNameById.get(serviceId.toString())
+      })),
       gender,
       date,
       startTime,

@@ -2,6 +2,7 @@ const Booking = require('../../models/Booking');
 
 const SHIFT_START = 9 * 60;   // 540 minutes = 09:00
 const SHIFT_END = 19 * 60;    // 1140 minutes = 19:00
+const SLOT_BUFFER_MINUTES = 30;
 
 // Convert "HH:MM" string to total minutes since midnight
 function timeToMinutes(timeStr) {
@@ -26,6 +27,15 @@ function isTimeOverlapping(start1, end1, start2, end2) {
   
   // Overlap occurs if A starts before B ends AND A ends after B starts
   return s1 < e2 && e1 > s2;
+}
+
+function isSlotBlockedByBooking(slotStart, slotEnd, booking) {
+  const slotStartMins = timeToMinutes(slotStart);
+  const slotEndMins = timeToMinutes(slotEnd);
+  const blockedStartMins = timeToMinutes(booking.startTime) - SLOT_BUFFER_MINUTES;
+  const blockedEndMins = timeToMinutes(booking.endTime) + SLOT_BUFFER_MINUTES;
+
+  return slotStartMins < blockedEndMins && slotEndMins > blockedStartMins;
 }
 
 // Given an array of service documents, sum all duration fields
@@ -58,7 +68,7 @@ async function generateAvailableSlots(date, barberId, totalDuration) {
   const currentDateStr = now.toISOString().split('T')[0];
   const nowMins = now.getHours() * 60 + now.getMinutes();
 
-  // 2. Generate slots spaced by totalDuration
+  // 2. Generate slots with a buffer after each possible appointment
   while (currentMins + totalDuration <= SHIFT_END) {
     const slotStartStr = minutesToTime(currentMins);
     const slotEndStr = minutesToTime(currentMins + totalDuration);
@@ -67,9 +77,9 @@ async function generateAvailableSlots(date, barberId, totalDuration) {
 
     // 4a is already checked by while condition (currentMins + totalDuration <= SHIFT_END)
 
-    // 4b. Check overlap with existing bookings
+    // 4b. Check overlap with existing bookings, including the required buffer
     for (const b of bookings) {
-      if (isTimeOverlapping(slotStartStr, slotEndStr, b.startTime, b.endTime)) {
+      if (isSlotBlockedByBooking(slotStartStr, slotEndStr, b)) {
         isAvailable = false;
         break;
       }
@@ -82,10 +92,13 @@ async function generateAvailableSlots(date, barberId, totalDuration) {
 
     slots.push({
       time: slotStartStr,
+      startTime: slotStartStr,
+      endTime: slotEndStr,
+      label: `${slotStartStr} to ${slotEndStr}`,
       available: isAvailable
     });
 
-    currentMins += totalDuration;
+    currentMins += totalDuration + SLOT_BUFFER_MINUTES;
   }
 
   return slots;
@@ -109,19 +122,6 @@ async function checkSlotAvailability(barberId, date, startTime, endTime) {
     return { available: false, conflictingBooking: null };
   }
 
-  const conflictingBooking = await Booking.findOne({
-    barber: barberId,
-    date: date,
-    status: { $ne: 'cancelled' },
-    $expr: {
-      $and: [
-        { $lt: [{ $toInt: { $arrayElemAt: [{ $split: ["$startTime", ":"] }, 0] } }, endMins / 60 ] }, // approximation, we need actual overlap logic in query or fetch all and filter array. 
-        // Better to fetch all and filter since checking overlap in raw strings is tricky across boundaries
-      ]
-    }
-  }); // Since we need to accurately check overlap, let's just use the JS function 
-
-  // Better approach for overlap:
   const bookings = await Booking.find({
     barber: barberId,
     date: date,
@@ -129,7 +129,7 @@ async function checkSlotAvailability(barberId, date, startTime, endTime) {
   });
 
   for (const b of bookings) {
-    if (isTimeOverlapping(startTime, endTime, b.startTime, b.endTime)) {
+    if (isSlotBlockedByBooking(startTime, endTime, b)) {
       return { available: false, conflictingBooking: b };
     }
   }
@@ -143,6 +143,8 @@ module.exports = {
   generateAvailableSlots, 
   checkSlotAvailability, 
   isTimeOverlapping,
+  isSlotBlockedByBooking,
   timeToMinutes,
-  minutesToTime
+  minutesToTime,
+  SLOT_BUFFER_MINUTES
 };
