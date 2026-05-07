@@ -38,3 +38,19 @@ exports.createBranch = async (req, res) => {
     res.status(500).json({ success: false, error: 'Server Error', details: error.message });
   }
 };
+
+// @desc    Delete a branch
+// @route   DELETE /api/branches/:id
+// @access  Public
+exports.deleteBranch = async (req, res) => {
+  try {
+    const branch = await Branch.findByIdAndDelete(req.params.id);
+    if (!branch) {
+      return res.status(404).json({ success: false, error: 'Branch not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Branch deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Server Error', details: error.message });
+  }
+};

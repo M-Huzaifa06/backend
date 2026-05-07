@@ -40,3 +40,19 @@ exports.createService = async (req, res) => {
     res.status(500).json({ success: false, error: 'Server Error', details: error.message });
   }
 };
+
+// @desc    Delete a service
+// @route   DELETE /api/services/:id
+// @access  Public
+exports.deleteService = async (req, res) => {
+  try {
+    const service = await Service.findByIdAndDelete(req.params.id);
+    if (!service) {
+      return res.status(404).json({ success: false, error: 'Service not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Service deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Server Error', details: error.message });
+  }
+};
